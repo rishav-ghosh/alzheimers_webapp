@@ -1,17 +1,22 @@
-# Use Python base image
-FROM python:3.10-slim
+FROM python:3.10
 
-# Set working directory
 WORKDIR /app
 
-# Copy code
+# Copy your code (but *not* the large model file)
 COPY . /app
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose Flask port
+# Create model directory
+RUN mkdir -p /app/model
+
+# Download the model file from Google Drive
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -L "https://drive.google.com/uc?export=download&id=1JlZI7v9G9SLjlAu8ogFdJtNdYuPxX2Dc" \
+         -o /app/model/resnet101_extraData_5epochs.pth
+
 EXPOSE 5000
 
-# Run Flask app
-CMD ["python3", "app.py"]
+CMD ["python", "app.py"]
