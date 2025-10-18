@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "Cloning repository..."
-                git branch: 'main', url: 'https://github.com/your-username/alzheimers_webapp.git'
+                git branch: 'main', url: 'https://github.com/rishav-ghosh/alzheimers_webapp.git'
             }
         }
 
