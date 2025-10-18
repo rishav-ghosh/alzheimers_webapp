@@ -19,9 +19,9 @@ pipeline {
             steps {
                 echo '🐍 Installing Python dependencies...'
                 sh '''
-                    python -m pip install --upgrade pip
-                    pip install -r requirements.txt --break-system-packages
-                    pip install "dvc[all]" --break-system-packages
+                    python3 -m pip install --upgrade pip
+                    pip3 install -r requirements.txt --break-system-packages
+                    pip3 install "dvc[all]" --break-system-packages
                 '''
             }
         }
