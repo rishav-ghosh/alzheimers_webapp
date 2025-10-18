@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.10'
-            args '-u root' // 👈 run container as root so pip can install
-        }
-    }
+    agent any
 
     environment {
         APP_NAME = "alzheimers_app"
