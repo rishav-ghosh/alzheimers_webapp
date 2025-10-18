@@ -12,11 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN mkdir -p /app/model
 
 # Download the model file from Google Drive
-RUN apt-get update && \
-    apt-get install -y curl && \
-    curl -L "https://drive.google.com/uc?export=download&id=1JlZI7v9G9SLjlAu8ogFdJtNdYuPxX2Dc" \
-         -o /app/model/resnet101_extraData_5epochs.pth
+RUN pip install gdown
+RUN gdown "https://drive.google.com/uc?id=1JlZI7v9G9SLjlAu8ogFdJtNdYuPxX2Dc" -O /app/model/resnet101_extraData_5epochs.pth
+
 
 EXPOSE 5000
 
-CMD ["python", "app.py"]
+CMD ["python3", "app.py"]
