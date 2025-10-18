@@ -1,41 +1,48 @@
 pipeline {
-    agent any
+    agent {
+        // Run the entire pipeline inside a Python container for consistency
+        docker { image 'python:3.10' }
+    }
 
     environment {
-        IMAGE_NAME = "alzheimers_webapp"
-        CONTAINER_NAME = "alzheimers_app"
+        APP_NAME = "alzheimers_app"
+        IMAGE_NAME = "alzheimers_app_image"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-                echo "Cloning repository..."
+                echo '📦 Cloning repository...'
                 git branch: 'main', url: 'https://github.com/rishav-ghosh/alzheimers_webapp.git'
             }
         }
 
         stage('Setup Python & DVC') {
             steps {
-                echo "Installing dependencies..."
-                sh 'pip install dvc[all]'
-                sh 'dvc pull'   // fetch model files tracked by DVC
+                echo '🐍 Installing Python dependencies...'
+                sh '''
+                    python -m pip install --upgrade pip
+                    pip install -r requirements.txt
+                    pip install "dvc[all]"
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image..."
-                sh 'docker build -t $IMAGE_NAME .'
+                echo '🐳 Building Docker image...'
+                sh '''
+                    docker build -t ${IMAGE_NAME} .
+                '''
             }
         }
 
         stage('Run Container') {
             steps {
-                echo "Running Flask app container..."
+                echo '🚀 Running Docker container...'
                 sh '''
-                docker run -d -p 5000:5000 --name $CONTAINER_NAME $IMAGE_NAME
-                sleep 10
-                docker ps
+                    docker run -d --name ${APP_NAME} -p 5000:5000 ${IMAGE_NAME}
                 '''
             }
         }
@@ -43,11 +50,17 @@ pipeline {
 
     post {
         always {
-            echo "Cleaning up containers..."
+            echo '🧹 Cleaning up containers...'
             sh '''
-            docker stop $CONTAINER_NAME || true
-            docker rm $CONTAINER_NAME || true
+                docker stop ${APP_NAME} || true
+                docker rm ${APP_NAME} || true
             '''
+        }
+        success {
+            echo '✅ Build and container run successful!'
+        }
+        failure {
+            echo '❌ Build failed. Check logs above.'
         }
     }
 }
