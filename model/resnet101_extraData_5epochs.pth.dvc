@@ -1,0 +1,5 @@
+outs:
+- md5: 7744d8bbc9ee85c6253e5d44e4947347
+  size: 170664827
+  hash: md5
+  path: resnet101_extraData_5epochs.pth

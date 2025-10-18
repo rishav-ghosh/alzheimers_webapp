@@ -1,0 +1,6 @@
+flask
+torch
+torchvision
+dvc
+numpy
+pillow
