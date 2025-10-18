@@ -1,9 +1,7 @@
 pipeline {
     agent {
-        docker {
-            image 'python:3.10'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
-        }
+        // Run the entire pipeline inside a Python container for consistency
+        docker { image 'python:3.10' }
     }
 
     environment {
@@ -12,14 +10,6 @@ pipeline {
     }
 
     stages {
-        stage('Install Docker CLI') {
-            steps {
-                echo '⚙️ Installing Docker CLI inside container...'
-                sh '''
-                    apt-get update && apt-get install -y docker.io
-                '''
-            }
-        }
 
         stage('Checkout') {
             steps {
@@ -32,8 +22,9 @@ pipeline {
             steps {
                 echo '🐍 Installing Python dependencies...'
                 sh '''
-                    pip install --no-cache-dir -r requirements.txt
-                    pip install --no-cache-dir "dvc[all]"
+                    python -m pip install --upgrade pip
+                    pip install -r requirements.txt
+                    pip install "dvc[all]"
                 '''
             }
         }
@@ -48,7 +39,10 @@ pipeline {
         stage('Run Container') {
             steps {
                 echo '🚀 Running Docker container...'
+                // Stop and remove if already exists
                 sh '''
+                    docker stop ${APP_NAME} || true
+                    docker rm ${APP_NAME} || true
                     docker run -d --name ${APP_NAME} -p 5000:5000 ${IMAGE_NAME}
                 '''
             }
@@ -56,18 +50,13 @@ pipeline {
     }
 
     post {
-        always {
-            echo '🧹 Cleaning up containers...'
-            sh '''
-                docker stop ${APP_NAME} || true
-                docker rm ${APP_NAME} || true
-            '''
-        }
         success {
             echo '✅ Build and container run successful!'
+            echo '🌐 Your app should now be live at: http://localhost:5000'
         }
         failure {
             echo '❌ Build failed. Check logs above.'
         }
+        // 👇 We REMOVED cleanup here so container keeps running
     }
 }
