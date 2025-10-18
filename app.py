@@ -16,7 +16,10 @@ class_names = ["Mild Dementia", "Moderate Dementia", "Non Demented", "Very mild 
 DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 model = models.resnet101(weights=None)   # same architecture as training
 model.fc = nn.Linear(model.fc.in_features, len(class_names))
-model.load_state_dict(torch.load("model/resnet101_extraData_5epochs.pth", map_location=DEVICE))
+model.load_state_dict(
+    torch.load("model/resnet101_extraData_5epochs.pth", map_location=DEVICE, weights_only=False)
+)
+
 model.to(DEVICE)
 model.eval()
 
