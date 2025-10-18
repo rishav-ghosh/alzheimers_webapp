@@ -1,7 +1,9 @@
 pipeline {
     agent {
-        // Run the entire pipeline inside a Python container for consistency
-        docker { image 'python:3.10' }
+        docker {
+            image 'python:3.10'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
+        }
     }
 
     environment {
@@ -10,6 +12,14 @@ pipeline {
     }
 
     stages {
+        stage('Install Docker CLI') {
+            steps {
+                echo '⚙️ Installing Docker CLI inside container...'
+                sh '''
+                    apt-get update && apt-get install -y docker.io
+                '''
+            }
+        }
 
         stage('Checkout') {
             steps {
@@ -22,9 +32,8 @@ pipeline {
             steps {
                 echo '🐍 Installing Python dependencies...'
                 sh '''
-                    python -m pip install --upgrade pip
-                    pip install -r requirements.txt
-                    pip install "dvc[all]"
+                    pip install --no-cache-dir -r requirements.txt
+                    pip install --no-cache-dir "dvc[all]"
                 '''
             }
         }
@@ -32,9 +41,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo '🐳 Building Docker image...'
-                sh '''
-                    docker build -t ${IMAGE_NAME} .
-                '''
+                sh 'docker build -t ${IMAGE_NAME} .'
             }
         }
 
